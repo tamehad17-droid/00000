@@ -3,6 +3,7 @@ import { Search, RefreshCw, Gamepad2, Filter, SortAsc } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { taskService } from '../../services/taskService';
 import { adgemService } from '../../services/adgemService';
+import { adsterraService } from '../../services/adsterraService';
 import { fallbackTaskService } from '../../services/fallbackTaskService';
 import { useAuth } from '../../contexts/AuthContext';
 import TaskCard from '../../components/ui/TaskCard';
@@ -89,19 +90,15 @@ const TasksList = () => {
         submissions = fallbackSubmissions || [];
       }
 
-      // Load AdGem offers if category is 'adgem' or 'all'
-      const handleViewTask = (task) => {
-        // Check if it's an AdGem offer
-        if (task?.isAdgemOffer) {
-          if (task?.requirements) {
-            // Show requirements in a dialog or navigate to a details page
-            alert(`Task Requirements:\n${Object.entries(task.requirements).map(([key, value]) => `- ${key}: ${value}`).join('\n')}`);
-          }
-        } else {
-          // Navigate to task details page for regular tasks
-          window.location.href = `/task/${task.id}`;
-        }
-      };
+      // Load AdGem and Adsterra offers if category is appropriate or 'all'
+      const [adsterraOffers, adgemOffers] = await Promise.all([
+        (selectedCategory === 'all' || selectedCategory === 'adsterra') 
+          ? adsterraService.getAdsterraOffers(user?.id).then(res => res.offers || [])
+          : Promise.resolve([]),
+        (selectedCategory === 'all' || selectedCategory === 'adgem')
+          ? adgemService.getAdgemOffers(user?.id).then(res => res.offers || [])
+          : Promise.resolve([])
+      ]);
       if (selectedCategory === 'all' || selectedCategory === 'adgem') {
         try {
           const { offers, error: offersError } = await adgemService?.getAdgemOffers(user?.id);
@@ -145,25 +142,10 @@ const TasksList = () => {
     }
   });
 
-  // Combine AdGem offers with filtered tasks
-  const combinedTasks = selectedCategory === 'adgem' 
-    ? adgemOffers?.map(offer => ({
-        id: offer?.id,
-        title: offer?.title,
-        description: offer?.description,
-        category: 'adgem',
-        reward_amount: offer?.display_reward,
-        // Replace placeholder {USER_ID} if present in external_url
-        external_url: (offer?.external_url || '')?.replace('{USER_ID}', user?.id || 'guest'),
-        requirements: offer?.requirements,
-        created_at: offer?.created_at,
-        total_slots: 1,
-        completed_slots: 0,
-        level_percentage: offer?.user_level >= 5 ? 85 : [10, 25, 40, 55, 70]?.[offer?.user_level] || 10,
-        user_level: offer?.user_level,
-        isAdgemOffer: true
-      }))
-    : [...filteredTasks, ...(selectedCategory === 'all' ? adgemOffers?.map(offer => ({
+  // Combine AdGem and Adsterra offers with filtered tasks
+  const combinedTasks = (() => {
+    if (selectedCategory === 'adgem') {
+      return adgemOffers?.map(offer => ({
         id: offer?.id,
         title: offer?.title,
         description: offer?.description,
@@ -176,8 +158,62 @@ const TasksList = () => {
         completed_slots: 0,
         level_percentage: offer?.user_level >= 5 ? 85 : [10, 25, 40, 55, 70]?.[offer?.user_level] || 10,
         user_level: offer?.user_level,
-        isAdgemOffer: true
-      })) : [])];
+        isAdgemOffer: true,
+        status: 'active'
+      }));
+    } else if (selectedCategory === 'adsterra') {
+      return adsterraOffers?.map(offer => ({
+        id: offer?.id,
+        title: offer?.title,
+        description: offer?.description,
+        category: 'adsterra',
+        reward_amount: offer?.reward_amount,
+        external_url: offer?.external_url,
+        requirements: offer?.requirements,
+        created_at: offer?.created_at,
+        total_slots: 1,
+        completed_slots: 0,
+        isAdsterraOffer: true,
+        status: 'active'
+      }));
+    } else {
+      return [
+        ...filteredTasks,
+        ...(selectedCategory === 'all' ? [
+          ...adgemOffers?.map(offer => ({
+            id: offer?.id,
+            title: offer?.title,
+            description: offer?.description,
+            category: 'adgem',
+            reward_amount: offer?.display_reward,
+            external_url: (offer?.external_url || '')?.replace('{USER_ID}', user?.id || 'guest'),
+            requirements: offer?.requirements,
+            created_at: offer?.created_at,
+            total_slots: 1,
+            completed_slots: 0,
+            level_percentage: offer?.user_level >= 5 ? 85 : [10, 25, 40, 55, 70]?.[offer?.user_level] || 10,
+            user_level: offer?.user_level,
+            isAdgemOffer: true,
+            status: 'active'
+          })),
+          ...adsterraOffers?.map(offer => ({
+            id: offer?.id,
+            title: offer?.title,
+            description: offer?.description,
+            category: 'adsterra',
+            reward_amount: offer?.reward_amount,
+            external_url: offer?.external_url,
+            requirements: offer?.requirements,
+            created_at: offer?.created_at,
+            total_slots: 1,
+            completed_slots: 0,
+            isAdsterraOffer: true,
+            status: 'active'
+          }))
+        ] : [])
+      ];
+    }
+  })();
 
   // Add this block - Calculate stats for TaskStats component
   const taskStats = {
@@ -277,6 +313,7 @@ const TasksList = () => {
                 <option value="referral">Referral</option>
                 <option value="video_watch">Video Watch</option>
                 <option value="adgem">🎮 AdGem Offers</option>
+                <option value="adsterra">💰 Adsterra Offers</option>
               </select>
 
               <select

@@ -63,7 +63,7 @@ export const adgemService = {
         countries: ['US', 'CA', 'GB', 'AU'],
         device_types: ['mobile'],
         category: 'Gaming',
-        external_url: `https://wall.adgem.com/g/31409?user_id=${userId || 'guest'}`,
+        external_url: `https://api.adgem.com/v1/wall?appid=${process.env.VITE_ADGEM_APP_ID}&playerid=${userId || 'guest'}&all_offers=1`,
         requirements: {
           min_level: 5,
           time_limit: '24 hours',
