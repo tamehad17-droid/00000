@@ -90,6 +90,18 @@ const TasksList = () => {
       }
 
       // Load AdGem offers if category is 'adgem' or 'all'
+      const handleViewTask = (task) => {
+        // Check if it's an AdGem offer
+        if (task?.isAdgemOffer) {
+          if (task?.requirements) {
+            // Show requirements in a dialog or navigate to a details page
+            alert(`Task Requirements:\n${Object.entries(task.requirements).map(([key, value]) => `- ${key}: ${value}`).join('\n')}`);
+          }
+        } else {
+          // Navigate to task details page for regular tasks
+          window.location.href = `/task/${task.id}`;
+        }
+      };
       if (selectedCategory === 'all' || selectedCategory === 'adgem') {
         try {
           const { offers, error: offersError } = await adgemService?.getAdgemOffers(user?.id);

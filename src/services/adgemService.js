@@ -8,8 +8,13 @@ export const adgemService = {
       const { data: offers, error } = await supabase?.from('adgem_offers')?.select('*')?.eq('is_active', true)?.order('created_at', { ascending: false });
 
       // If there is an error or no result, fall back to static offers
-      if (error || !offers) {
-        console.warn('Database offers not available, using fallback AdGem offers');
+        if (error) {
+          console.error('Database error when fetching offers:', error);
+          throw new Error('database_error');
+        }
+      
+        if (!offers) {
+          console.warn('No offers returned from database');
         return { offers: this.getFallbackAdGemOffers(userId), error: null };
       }
 
