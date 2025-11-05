@@ -7,9 +7,15 @@ export const adgemService = {
       // First try to get from database
       const { data: offers, error } = await supabase?.from('adgem_offers')?.select('*')?.eq('is_active', true)?.order('created_at', { ascending: false });
 
-      if (error || !offers || offers.length === 0) {
+      // If there is an error or no result, fall back to static offers
+      if (error || !offers) {
         console.warn('Database offers not available, using fallback AdGem offers');
         return { offers: this.getFallbackAdGemOffers(userId), error: null };
+      }
+
+      // If DB returned an empty list, return empty offers (don't use fallback)
+      if (Array.isArray(offers) && offers.length === 0) {
+        return { offers: [], error: null };
       }
 
       // Get user level to calculate display rewards (defensive - allow null userId)
