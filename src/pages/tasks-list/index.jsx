@@ -141,7 +141,8 @@ const TasksList = () => {
         description: offer?.description,
         category: 'adgem',
         reward_amount: offer?.display_reward,
-        external_url: offer?.external_url,
+        // Replace placeholder {USER_ID} if present in external_url
+        external_url: (offer?.external_url || '')?.replace('{USER_ID}', user?.id || 'guest'),
         requirements: offer?.requirements,
         created_at: offer?.created_at,
         total_slots: 1,
@@ -156,7 +157,7 @@ const TasksList = () => {
         description: offer?.description,
         category: 'adgem',
         reward_amount: offer?.display_reward,
-        external_url: offer?.external_url,
+        external_url: (offer?.external_url || '')?.replace('{USER_ID}', user?.id || 'guest'),
         requirements: offer?.requirements,
         created_at: offer?.created_at,
         total_slots: 1,
@@ -177,7 +178,8 @@ const TasksList = () => {
   const handleStartTask = (task) => {
     if (task?.isAdgemOffer) {
       // For AdGem offers, open external URL directly
-      window.open(task?.external_url, '_blank');
+      const url = (task?.external_url || '')?.replace('{USER_ID}', user?.id || 'guest');
+      if (url) window.open(url, '_blank');
     } else {
       // For regular tasks, use existing flow
       console.log('Starting task:', task);

@@ -167,13 +167,33 @@ export const adminService = {
   // Task Management
   async createTask(taskData) {
     const { data: currentUser } = await supabase?.auth?.getUser();
-    
-    const { data, error } = await supabase?.from('tasks')?.insert({
-        ...taskData,
-        created_by: currentUser?.user?.id
-      })?.select()?.single();
 
-    if (error) throw error;
+    // Sanitize and normalize payload to avoid 400 errors from invalid types
+    const toNumberOrNull = (val) => {
+      if (val === undefined || val === null || val === '') return null;
+      const n = Number(val);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const payload = {
+      title: (taskData?.title || '').trim(),
+      description: (taskData?.description || '').trim(),
+      category: taskData?.category || 'survey',
+      reward_amount: toNumberOrNull(taskData?.reward_amount) ?? 0,
+      total_slots: Math.max(1, parseInt(taskData?.total_slots || 1, 10)),
+      level_required: toNumberOrNull(taskData?.level_required) ?? 0,
+      proof_type: taskData?.proof_type || 'text',
+      proof_instructions: (taskData?.proof_instructions || '').trim(),
+      external_url: taskData?.external_url ? String(taskData?.external_url).trim() : null,
+      status: taskData?.status || 'active',
+      created_by: currentUser?.user?.id
+    };
+
+    const { data, error } = await supabase?.from('tasks')
+      ?.insert(payload)
+      ?.select()?.single();
+
+    if (error) throw new Error(error?.message || 'Failed to create task');
     return data;
   },
 
@@ -196,9 +216,32 @@ export const adminService = {
   },
 
   async updateTask(taskId, updates) {
-    const { data, error } = await supabase?.from('tasks')?.update(updates)?.eq('id', taskId)?.select()?.single();
+    // Sanitize updates similarly to create
+    const toNumberOrNull = (val) => {
+      if (val === undefined || val === null || val === '') return null;
+      const n = Number(val);
+      return Number.isFinite(n) ? n : null;
+    };
 
-    if (error) throw error;
+    const sanitized = {
+      ...(updates?.title !== undefined ? { title: String(updates.title).trim() } : {}),
+      ...(updates?.description !== undefined ? { description: String(updates.description).trim() } : {}),
+      ...(updates?.category !== undefined ? { category: updates.category || 'survey' } : {}),
+      ...(updates?.reward_amount !== undefined ? { reward_amount: toNumberOrNull(updates.reward_amount) ?? 0 } : {}),
+      ...(updates?.total_slots !== undefined ? { total_slots: Math.max(1, parseInt(updates.total_slots || 1, 10)) } : {}),
+      ...(updates?.level_required !== undefined ? { level_required: toNumberOrNull(updates.level_required) ?? 0 } : {}),
+      ...(updates?.proof_type !== undefined ? { proof_type: updates.proof_type || 'text' } : {}),
+      ...(updates?.proof_instructions !== undefined ? { proof_instructions: String(updates.proof_instructions || '').trim() } : {}),
+      ...(updates?.external_url !== undefined ? { external_url: updates.external_url ? String(updates.external_url).trim() : null } : {}),
+      ...(updates?.status !== undefined ? { status: updates.status || 'active' } : {})
+    };
+
+    const { data, error } = await supabase?.from('tasks')
+      ?.update(sanitized)
+      ?.eq('id', taskId)
+      ?.select()?.single();
+
+    if (error) throw new Error(error?.message || 'Failed to update task');
     await this.logAdminAction('UPDATE', 'tasks', taskId, updates);
     return data;
   },

@@ -72,7 +72,8 @@ serve(async (req) => {
           countries: offer.countries || offer.geos || [],
           device_types: offer.platforms || offer.device_types || ['mobile', 'desktop'],
           category: offer.category || offer.vertical || 'general',
-          external_url: `https://api.adgem.com/v1/wall?appid=31283&playerid={USER_ID}&offerid=${offer.id}`,
+          // Use configured publisher/app id and keep {USER_ID} placeholder to be replaced on client
+          external_url: `https://api.adgem.com/v1/wall?appid=${ADGEM_PUBLISHER_ID}&playerid={USER_ID}&offerid=${offer.id}`,
           requirements: {
             min_level: 0,
             offer_type: offer.offer_type,
