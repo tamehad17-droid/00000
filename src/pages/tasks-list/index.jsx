@@ -187,14 +187,20 @@ const TasksList = () => {
     totalEarnings: userSubmissions?.filter(sub => sub?.status === 'approved')?.reduce((sum, sub) => sum + (sub?.reward_amount || 0), 0) || 0
   };
 
+  // Use react-router navigation for regular tasks
+  const navigate = typeof window !== 'undefined' && window.reactNavigate ? window.reactNavigate : null;
   const handleStartTask = (task) => {
     if (task?.isAdgemOffer) {
       // For AdGem offers, open external URL directly
       const url = (task?.external_url || '')?.replace('{USER_ID}', user?.id || 'guest');
       if (url) window.open(url, '_blank');
-    } else {
-      // For regular tasks, use existing flow
-      console.log('Starting task:', task);
+    } else if (task?.id) {
+      // For regular tasks, navigate to details page
+      if (navigate) {
+        navigate(`/task-details/${task.id}`);
+      } else if (window && window.location) {
+        window.location.href = `/task-details/${task.id}`;
+      }
     }
   };
 
