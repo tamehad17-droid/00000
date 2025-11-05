@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Eye, EyeOff, Shield, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
-import GoogleSignInButton from './GoogleSignInButton';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -88,10 +87,7 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Google Sign In */}
-      <div className="mb-6">
-        <GoogleSignInButton isLoading={isLoading} setIsLoading={setIsLoading} />
-      </div>
+      {/* Google Sign In removed */}
 
       {/* Divider */}
       <div className="relative mb-6">
