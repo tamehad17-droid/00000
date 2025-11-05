@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, RefreshCw, Filter, SortAsc, Grid, List, Star, Clock, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
@@ -13,6 +14,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Progress } from '../../components/ui/Progress';
 
 const TasksListEnhanced = () => {
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [userSubmissions, setUserSubmissions] = useState([]);
@@ -107,8 +109,9 @@ const TasksListEnhanced = () => {
   };
 
   const handleTaskStart = (task) => {
-    console.log('Starting task:', task);
-    // Navigate to task details or start task flow
+    if (task?.id) {
+      navigate(`/task-details/${task.id}`);
+    }
   };
 
   const handleTaskView = (task) => {
