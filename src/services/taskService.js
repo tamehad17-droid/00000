@@ -4,10 +4,11 @@ export const taskService = {
   // Get all available tasks with level-based rewards for AdGem
   async getTasks(filters = {}) {
     try {
+      // Only show tasks that are active/available to users (admin-created tasks should have status 'active')
       let query = supabase?.from('tasks')?.select(`
           *,
           created_by_profile:user_profiles!tasks_created_by_fkey(full_name, email)
-        `)?.eq('status', 'pending');
+        `)?.eq('status', 'active');
 
       // Apply filters
       if (filters?.category) {
@@ -56,10 +57,11 @@ export const taskService = {
         }
       }
 
+      // Fetch only active tasks for users. Admin may create tasks with status='active'.
       let query = supabase?.from('tasks')?.select(`
           *,
           created_by_profile:user_profiles!tasks_created_by_fkey(full_name, email)
-        `)?.eq('status', 'pending');
+        `)?.eq('status', 'active');
 
       // Apply filters
       if (filters?.category) {
