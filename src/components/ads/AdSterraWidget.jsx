@@ -22,6 +22,18 @@ const AdSterraWidget = ({
     return shares[level] || 0.10;
   };
 
+  const resolveAdKey = () => {
+    if (import.meta?.env?.VITE_ADSTERRA_PUBLISHER_ID) return import.meta.env.VITE_ADSTERRA_PUBLISHER_ID;
+    if (import.meta?.env?.VITE_ADSTERRA_API_KEY) return import.meta.env.VITE_ADSTERRA_API_KEY;
+    if (typeof process !== 'undefined') {
+      if (process.env.NEXT_PUBLIC_ADSTERRA_PUBLISHER_ID) return process.env.NEXT_PUBLIC_ADSTERRA_PUBLISHER_ID;
+      if (process.env.REACT_APP_ADSTERRA_PUBLISHER_ID) return process.env.REACT_APP_ADSTERRA_PUBLISHER_ID;
+      if (process.env.ADSTERRA_PUBLISHER_ID) return process.env.ADSTERRA_PUBLISHER_ID;
+      if (process.env.ADSTERRA_API_KEY) return process.env.ADSTERRA_API_KEY;
+    }
+    return '';
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -48,7 +60,7 @@ const AdSterraWidget = ({
     if (!window.adsterra) return;
 
     const adConfig = {
-      key: import.meta.env?.VITE_ADSTERRA_PUBLISHER_ID,
+      key: resolveAdKey(),
       format: adType,
       height: adType === 'banner' ? 250 : 300,
       width: adType === 'banner' ? 300 : 250,

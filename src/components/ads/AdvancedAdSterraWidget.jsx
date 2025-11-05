@@ -31,6 +31,10 @@ const AdvancedAdSterraWidget = ({
     if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ADSTERRA_PUBLISHER_ID) {
       return import.meta.env.VITE_ADSTERRA_PUBLISHER_ID;
     }
+    // Accept API key variables as a fallback if publisher ID not provided
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ADSTERRA_API_KEY) {
+      return import.meta.env.VITE_ADSTERRA_API_KEY;
+    }
     // Next.js
     if (process.env.NEXT_PUBLIC_ADSTERRA_PUBLISHER_ID) {
       return process.env.NEXT_PUBLIC_ADSTERRA_PUBLISHER_ID;
@@ -38,6 +42,9 @@ const AdvancedAdSterraWidget = ({
     // Node.js/Server-side
     if (process.env.ADSTERRA_PUBLISHER_ID) {
       return process.env.ADSTERRA_PUBLISHER_ID;
+    }
+    if (process.env.ADSTERRA_API_KEY) {
+      return process.env.ADSTERRA_API_KEY;
     }
     // Fallback to direct value for production
     return 'YOUR_ADSTERRA_PUBLISHER_ID';

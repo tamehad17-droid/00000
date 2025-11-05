@@ -353,6 +353,31 @@ export const adgemService = {
     } catch (error) {
       return { submission: null, error };
     }
+  },
+
+  // Admin: list offers from database (shows real values)
+  async getOffers() {
+    try {
+      const { data, error } = await supabase?.from('adgem_offers')?.select('*')?.order('created_at', { ascending: false });
+      if (error) throw error;
+      return { offers: data || [], error: null };
+    } catch (error) {
+      return { offers: [], error };
+    }
+  },
+
+  // Admin: trigger sync from AdGem API into database via Edge Function
+  async syncOffers() {
+    try {
+      const { data, error } = await supabase?.functions?.invoke('sync-adgem-offers', {
+        method: 'POST',
+        body: {}
+      });
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error };
+    }
   }
 };
 
