@@ -215,6 +215,18 @@ export const adminService = {
     }
   },
 
+  // Delete a task by ID (admin only)
+  async deleteTask(taskId) {
+    try {
+      const { data, error } = await supabase?.from('tasks')?.delete()?.eq('id', taskId)?.select()?.single();
+      if (error) throw error;
+      await this.logAdminAction('DELETE', 'tasks', taskId, {});
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   async updateTask(taskId, updates) {
     // Sanitize updates similarly to create
     const toNumberOrNull = (val) => {
