@@ -1,24 +1,3 @@
-  // Delete a task by ID (admin only)
-  async deleteTask(taskId) {
-    try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', taskId)
-        .select()
-        .single();
-      if (error) {
-        if (error?.message?.includes('Failed to fetch') || 
-            error?.message?.includes('NetworkError')) {
-          throw new Error('Cannot connect to database. Your Supabase project may be paused or deleted. Please visit your Supabase dashboard to check project status.');
-        }
-        throw error;
-      }
-      return { task: data, error: null };
-    } catch (error) {
-      return { task: null, error };
-    }
-  },
 import { supabase } from '../lib/supabase';
 
 export const taskService = {
@@ -139,27 +118,7 @@ export const taskService = {
       0: 0.10, // 10% for level 0
       1: 0.25, // 25% for level 1
       2: 0.40, // 40% for level 2
-      // Delete a task by ID (admin only)
-      async deleteTask(taskId) {
-        try {
-          const { data, error } = await supabase
-            .from('tasks')
-            .delete()
-            .eq('id', taskId)
-            .select()
-            .single();
-          if (error) {
-            if (error?.message?.includes('Failed to fetch') || 
-                error?.message?.includes('NetworkError')) {
-              throw new Error('Cannot connect to database. Your Supabase project may be paused or deleted. Please visit your Supabase dashboard to check project status.');
-            }
-            throw error;
-          }
-          return { task: data, error: null };
-        } catch (error) {
-          return { task: null, error };
-        }
-      },
+
       3: 0.55, // 55% for level 3
       4: 0.70, // 70% for level 4
     };

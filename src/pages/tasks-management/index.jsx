@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import TaskFilterBar from './components/TaskFilterBar';
 import TaskModal from './components/TaskModal';
 import TaskCard from './components/TaskCard';
-import { adminService } from '../../services/adminService';
+import adminService from '../../services/adminService';
 import toast from 'react-hot-toast';
 
 const TasksManagement = () => {
